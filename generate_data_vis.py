@@ -14,12 +14,8 @@ df = pd.read_csv('data/chd_stroke_data.csv',
                  dtype={'LocationID': str})
 
 df['fips'] = df.apply(lambda x: locationid_to_fips(x['LocationID']), axis=1)
-print(df.head(5))
-print(df.shape)
 
 new_df = df[df['Stratification1'] == 'Ages 35-64 years'][df['Topic']=='Stroke'][df['Data_Value_Unit']=='per 100,000'][df['Year']=='2018'][['fips','Data_Value']]
-print(new_df.head(5))
-print(new_df.shape)
 
 import plotly.express as px
 
@@ -27,7 +23,7 @@ fig = px.choropleth(new_df, geojson=counties, locations='fips', color='Data_Valu
                            color_continuous_scale="Viridis",
                            range_color=(0, 40),
                            scope="usa",
-                           labels={'Data_Value':'per 100,000'}
+                           labels={'Data_Value':'Stroke Mortality Rate Per 100,000'}
                           )
 fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
 fig.show()
