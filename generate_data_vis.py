@@ -1,11 +1,33 @@
-# from urllib.request import urlopen
-# import json
-# with urlopen('https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json') as response:
-#     counties = json.load(response)
+from urllib.request import urlopen
+import json
+with urlopen('https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json') as response:
+    counties = json.load(response)
+
+def locationid_to_fips(locationid):
+    if len(str(locationid)) < 5:
+      return f'0{locationid}'
+    else:
+      return f'{locationid}'
 
 import pandas as pd
-df = pd.read_csv('data/chd_stroke_data.csv')
-print(df.head(5))
+df = pd.read_csv('data/chd_stroke_data.csv',
+                 dtype={'LocationID': str})
 
-new_df = df[df['Stratification1'] == 'Ages 35-64 years'][df['Topic']=='Stroke'][['LocationID','Data_Value']]
+df['fips'] = df.apply(lambda x: locationid_to_fips(x['LocationID']), axis=1)
+print(df.head(5))
+print(df.shape)
+
+new_df = df[df['Stratification1'] == 'Ages 35-64 years'][df['Topic']=='Stroke'][df['Data_Value_Unit']=='per 100,000'][df['Year']=='2018'][['fips','Data_Value']]
 print(new_df.head(5))
+print(new_df.shape)
+
+import plotly.express as px
+
+fig = px.choropleth(new_df, geojson=counties, locations='fips', color='Data_Value',
+                           color_continuous_scale="Viridis",
+                           range_color=(0, 40),
+                           scope="usa",
+                           labels={'Data_Value':'per 100,000'}
+                          )
+fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+fig.show()
