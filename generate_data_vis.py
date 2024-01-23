@@ -14,12 +14,15 @@ def locationid_to_fips(locationid):
 		return f'{locationid}'
 
 df = pd.read_csv('data/chd_stroke_data.csv',
-	dtype={'LocationID': str})
+	dtype={'LocationID': str}, low_memory=False)
 
 df['fips'] = df.apply(lambda x: locationid_to_fips(x['LocationID']), axis=1)
 
-new_df = df[df['Stratification1'] == 'Ages 35-64 years'][df['Topic']=='Stroke'][df['Data_Value_Unit']=='per 100,000']\
+new_df = df.loc[df['Stratification1'] == 'Ages 35-64 years']\
+	.loc[df['Topic']=='Stroke']\
+	.loc[df['Data_Value_Unit']=='per 100,000']\
 	[['fips','Data_Value','LocationDesc','Year']].sort_values(by=['Year'])
+
 fig = px.choropleth(new_df, geojson=counties, locations='fips', 
 	color='Data_Value', 
 	width=1200, height=600,
