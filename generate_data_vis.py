@@ -43,5 +43,17 @@ fig = px.choropleth(new_df, geojson=counties, locations='fips',
 	)
 fig.update_layout(margin={'b':0, 'l': 0}, coloraxis_colorbar={'title':{'text':None}, 
 	'ticklabelposition':'outside bottom', 'len':.5, 'thickness':15, 'xpad':0})
-fig.show()
+# fig.show()
 
+# initializing dash app
+from dash import Dash, html, dcc
+
+app = Dash(__name__)
+
+app.layout = html.Div([
+	html.Div(children='First Dash App'),
+	dcc.Graph(figure=fig)
+])
+
+if __name__ == '__main__':
+	app.run(debug=True)
