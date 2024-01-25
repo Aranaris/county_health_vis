@@ -3,6 +3,10 @@ from urllib.request import urlopen
 
 import pandas as pd
 import plotly.express as px
+import math
+
+from dash import Dash, html, dcc, callback, Output, Input
+import dash_bootstrap_components as dbc
 
 # get GeoJSON data for county map
 with urlopen('https://raw.githubusercontent.com/plotly/datasets/master/geojson-counties-fips.json') as response:
@@ -27,17 +31,14 @@ df['fips'] = df.apply(lambda x: locationid_to_fips(x['LocationID']), axis=1)
 new_df = df.loc[df['Data_Value_Unit']=='per 100,000']\
 	[['fips','Data_Value','LocationDesc','Year']].sort_values(by=['Year'])
 
+#setting up the year column for slider 
 years = new_df.Year.unique()
 years.sort()
-
 slider_dict = dict()
 for year in years:
 	slider_dict[int(year)] = {'label': year}
 
 # initializing dash app
-from dash import Dash, html, dcc, callback, Output, Input
-import dash_bootstrap_components as dbc
-
 external_stylesheets = [dbc.themes.DARKLY]
 app = Dash(__name__, external_stylesheets=external_stylesheets)
 
@@ -84,16 +85,18 @@ app.layout = dbc.Container([
 )
 def update_graph(disease_option, age_option, year_option):
 	# generating figure with set parameters
-	print(year_option)
 	filtered_df = new_df.loc[df['Topic']==disease_option]\
 		.loc[df['Stratification1']==age_option]\
 		.loc[df['Year']==str(year_option)]
+	
+	upper_quantile = filtered_df['Data_Value'].quantile(.75)
+	upper_bar_range = int(math.ceil(upper_quantile / 40.0)) * 40
 
 	fig = px.choropleth(filtered_df, geojson=counties, locations='fips', 
 		color='Data_Value', 
 		color_continuous_scale='Viridis',
 		# animation_frame='Year',
-		range_color=(0, 40),
+		range_color=(0, upper_bar_range),
 		scope='usa',
 		hover_name='LocationDesc',
 		labels={'Data_Value':'Mortality Rate Per 100,000'},
