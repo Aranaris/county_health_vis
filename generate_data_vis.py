@@ -24,36 +24,69 @@ df['fips'] = df.apply(lambda x: locationid_to_fips(x['LocationID']), axis=1)
 # key parameters are age group stratification, stroke vs chd, and per 100,000 unit
 
 new_df = df.loc[df['Stratification1'] == 'Ages 35-64 years']\
-	.loc[df['Topic']=='Stroke']\
 	.loc[df['Data_Value_Unit']=='per 100,000']\
 	[['fips','Data_Value','LocationDesc','Year']].sort_values(by=['Year'])
 
-# generating figure with set parameters
-
-fig = px.choropleth(new_df, geojson=counties, locations='fips', 
-	color='Data_Value', 
-	width=1200, height=600,
-	color_continuous_scale='Viridis',
-	title='Stroke Mortality per 100,000',
-	animation_frame='Year',
-	range_color=(0, 40),
-	scope='usa',
-	hover_name='LocationDesc',
-	labels={'Data_Value':'Stroke Mortality Rate Per 100,000'},
-	)
-fig.update_layout(margin={'b':0, 'l': 0}, coloraxis_colorbar={'title':{'text':None}, 
-	'ticklabelposition':'outside bottom', 'len':.5, 'thickness':15, 'xpad':0})
-# fig.show()
-
 # initializing dash app
-from dash import Dash, html, dcc
+from dash import Dash, html, dcc, callback, Output, Input
+import dash_bootstrap_components as dbc
 
-app = Dash(__name__)
+external_stylesheets = [dbc.themes.LUX]
+app = Dash(__name__, external_stylesheets=external_stylesheets)
 
-app.layout = html.Div([
-	html.Div(children='First Dash App'),
-	dcc.Graph(figure=fig)
-])
+app.layout = dbc.Container([
+	dbc.Row([
+		html.Div('Cardiovascular Disease Mortality Rate', className="text-primary text-center fs-3"),
+		html.Br(),
+	]),
+	
+	dbc.Row([
+		dbc.Col([
+			html.Div('Disease Type'),
+			dcc.RadioItems(options=['Coronary Heart Disease', 'Stroke'], 
+									value='Coronary Heart Disease',
+									id='chd-disease-item'),
+		]),
+		
+		dbc.Col([
+			html.Div('Age Range'),
+			dcc.RadioItems(options=[
+				{'label': '35 to 64', 'value': 'Ages 35-64 years'},
+				{'label': '65 and Up', 'value': 'Ages 65 years and older'},
+			], value='Ages 35-64 years',
+			id='chd-age-item'),
+		])
+		
+	]),
+	
+	dbc.Row([
+		dcc.Graph(figure={}, id='chd-graph')
+	]),
+	
+], fluid=True)
+
+@callback(
+	Output(component_id='chd-graph', component_property='figure'),
+	Input(component_id='chd-disease-item', component_property='value')
+)
+def update_graph(disease_option):
+	# generating figure with set parameters
+	filtered_df = new_df.loc[df['Topic']==disease_option]
+
+	fig = px.choropleth(filtered_df, geojson=counties, locations='fips', 
+		color='Data_Value', 
+		width=1200, height=600,
+		color_continuous_scale='Viridis',
+		animation_frame='Year',
+		range_color=(0, 40),
+		scope='usa',
+		hover_name='LocationDesc',
+		labels={'Data_Value':'Mortality Rate Per 100,000'},
+		)
+	fig.update_layout(margin={'b':0, 'l': 0}, coloraxis_colorbar={'title':{'text':None}, 
+		'ticklabelposition':'outside bottom', 'len':.5, 'thickness':15, 'xpad':0})
+	
+	return fig
 
 if __name__ == '__main__':
-	app.run(debug=True)
+	app.run(debug=False)
