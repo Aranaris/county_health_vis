@@ -25,18 +25,19 @@ df['fips'] = df.apply(lambda x: locationid_to_fips(x['LocationID']), axis=1)
 
 new_df = df.loc[df['Stratification1'] == 'Ages 35-64 years']\
 	.loc[df['Data_Value_Unit']=='per 100,000']\
+	.loc[df['Year']=='2010']\
 	[['fips','Data_Value','LocationDesc','Year']].sort_values(by=['Year'])
 
 # initializing dash app
 from dash import Dash, html, dcc, callback, Output, Input
 import dash_bootstrap_components as dbc
 
-external_stylesheets = [dbc.themes.LUX]
+external_stylesheets = [dbc.themes.DARKLY]
 app = Dash(__name__, external_stylesheets=external_stylesheets)
 
 app.layout = dbc.Container([
 	dbc.Row([
-		html.Div('Cardiovascular Disease Mortality Rate', className="text-primary text-center fs-3"),
+		html.H2('Cardiovascular Disease Mortality Rate', className="text-center"),
 		html.Br(),
 	]),
 	
@@ -75,16 +76,24 @@ def update_graph(disease_option):
 
 	fig = px.choropleth(filtered_df, geojson=counties, locations='fips', 
 		color='Data_Value', 
-		width=1200, height=600,
 		color_continuous_scale='Viridis',
-		animation_frame='Year',
+		# animation_frame='Year',
 		range_color=(0, 40),
 		scope='usa',
 		hover_name='LocationDesc',
 		labels={'Data_Value':'Mortality Rate Per 100,000'},
 		)
-	fig.update_layout(margin={'b':0, 'l': 0}, coloraxis_colorbar={'title':{'text':None}, 
-		'ticklabelposition':'outside bottom', 'len':.5, 'thickness':15, 'xpad':0})
+	fig.update_layout(
+		paper_bgcolor='rgba(0,0,0,0)',
+		geo_bgcolor='rgba(0,0,0,0)',
+		margin={'b':0, 'l': 0}, 
+		coloraxis_colorbar={
+		'tickfont_color':'white',
+		'title':{'text':None}, 
+		'ticklabelposition':'outside bottom', 
+		'len':.5, 'thickness':15, 'xpad':0
+		}
+		)
 	
 	return fig
 
