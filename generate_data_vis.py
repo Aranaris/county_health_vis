@@ -72,7 +72,11 @@ app.layout = dbc.Container([
 	),
 	
 	dbc.Row([
-		dcc.Graph(figure={}, id='chd-graph'),
+		dcc.Loading(
+			id='chd-graph-loading',
+			type='default',
+			children=dcc.Graph(figure={}, id='chd-graph'),
+		),
 	]),
 	
 ], fluid=True)
