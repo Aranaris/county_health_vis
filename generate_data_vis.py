@@ -18,8 +18,9 @@ def locationid_to_fips(locationid):
 	else:
 		return f'{locationid}'
 
-df = pd.read_csv('data/chd_stroke_data.csv',
-	dtype={'LocationID': str}, low_memory=False)
+with urlopen('https://data.cdc.gov/api/views/9cr5-2tt7/rows.csv?accessType=DOWNLOAD') as file:
+	df = pd.read_csv(file,
+		dtype={'LocationID': str}, low_memory=False)
 
 df['fips'] = df.apply(lambda x: locationid_to_fips(x['LocationID']), axis=1)
 
