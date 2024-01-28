@@ -33,9 +33,10 @@ new_df = df.loc[df['Data_Value_Unit']=='per 100,000']\
 #setting up the year column for slider 
 years = new_df.Year.unique()
 years.sort()
-slider_dict = dict()
-for year in years:
-	slider_dict[int(year)] = {'label': year}
+slider_dict = {
+	int(years[0]): {'label': years[0]},
+	int(years[-1]): {'label': years[-1]},
+}
 
 # initializing dash app
 external_stylesheets = [dbc.themes.DARKLY]
@@ -47,7 +48,8 @@ app.layout = dbc.Container([
 	dbc.Row([
 		html.H3('Cardiovascular Disease Mortality Rate (Per 100,000)', className='text-center'),
 		html.Br(),
-	]),
+	],
+	),
 	
 	dbc.Row([
 		dbc.Col([
@@ -65,11 +67,16 @@ app.layout = dbc.Container([
 			], value='Ages 35-64 years',
 			id='chd-age-item'),
 		]),
-		
-	]),
+	],
+	),
 
-	dbc.Row(
-		dcc.Slider(1999, 2018, 1, value=1999, marks=slider_dict, id='chd-year-slider'),
+	dbc.Row([
+			dcc.Slider(1999, 2018, 1, value=2018, 
+									marks=slider_dict,
+									included=False,
+									tooltip={"placement": "bottom", "always_visible": True},
+									id='chd-year-slider'),
+		],
 	),
 	
 	dbc.Row([
