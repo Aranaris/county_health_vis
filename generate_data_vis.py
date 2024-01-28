@@ -46,44 +46,66 @@ server = app.server
 
 app.layout = dbc.Container([
 	dbc.Row([
-		html.H3('Cardiovascular Disease Mortality Rate (Per 100,000)', className='text-center'),
+		dbc.Col(
+			html.H4('Cardiovascular Disease Mortality Rate (Per 100,000)', className='text-center'),
+			width={'size': 8, 'offset': 2}
+		),
 		html.Br(),
 	],
 	),
 	
 	dbc.Row([
 		dbc.Col([
-			html.Div('Disease Type'),
-			dcc.RadioItems(options=['Coronary Heart Disease', 'Stroke'], 
+			html.H6('Disease Type'),
+			dcc.RadioItems(
+									options=[
+										{'label': 'Coronary (CHD)', 'value': 'Coronary Heart Disease'},
+										{'label': 'Stroke', 'value':'Stroke'},
+										], 
 									value='Coronary Heart Disease',
-									id='chd-disease-item'),
-		]),
+									id='chd-disease-item',
+									style={'font-size': 12}),
+		], width={'size': 4, 'offset': 1}),
 		
 		dbc.Col([
-			html.Div('Age Range'),
+			html.H6('Age Range'),
 			dcc.RadioItems(options=[
 				{'label': '35 to 64', 'value': 'Ages 35-64 years'},
 				{'label': '65 and Up', 'value': 'Ages 65 years and older'},
 			], value='Ages 35-64 years',
-			id='chd-age-item'),
-		]),
+			id='chd-age-item',
+			style={'font-size': 12}),
+		], width={'size': 4, 'offset': 2}),
 	],
+	className='g-0'
 	),
 
 	dbc.Row([
-			dcc.Slider(1999, 2018, 1, value=2018, 
-									marks=slider_dict,
-									included=False,
-									tooltip={"placement": "bottom", "always_visible": True},
-									id='chd-year-slider'),
+		html.Br()
+	]),
+
+	dbc.Row([
+			dbc.Col(
+				dcc.Slider(1999, 2018, 1, value=2018, 
+										marks=slider_dict,
+										included=False,
+										tooltip={"placement": "bottom", "always_visible": True},
+										id='chd-year-slider'),	
+				align='center',
+				width={'size': 10, 'offset': 1}
+			)
+			
 		],
 	),
 	
 	dbc.Row([
-		dcc.Loading(
-			id='chd-graph-loading',
-			type='default',
-			children=dcc.Graph(figure={}, id='chd-graph'),
+		dbc.Col(
+			dcc.Loading(
+				id='chd-graph-loading',
+				type='default',
+				children=dcc.Graph(figure={}, id='chd-graph'),
+			),
+			align='end'
 		),
 	]),
 	
@@ -107,7 +129,6 @@ def update_graph(disease_option, age_option, year_option):
 	fig = px.choropleth(filtered_df, geojson=counties, locations='fips', 
 		color='Data_Value', 
 		color_continuous_scale='Viridis',
-		# animation_frame='Year',
 		range_color=(0, upper_bar_range),
 		scope='usa',
 		hover_name='LocationDesc',
@@ -116,12 +137,14 @@ def update_graph(disease_option, age_option, year_option):
 	fig.update_layout(
 		paper_bgcolor='rgba(0,0,0,0)',
 		geo_bgcolor='rgba(0,0,0,0)',
-		margin={'b':0, 'l': 0}, 
+		margin={'b':0, 'l': 0, 't': 0, 'r': 20}, 
 		coloraxis_colorbar={
 		'tickfont_color':'white',
 		'title':{'text':None}, 
 		'ticklabelposition':'outside bottom', 
 		'len':.5, 'thickness':15, 'xpad':0,
+		'x':.92,
+		'tickfont_size': 8
 		},
 		)
 	
